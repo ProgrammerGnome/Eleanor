@@ -143,6 +143,7 @@ void UCILoop(Board &board) {
             ctx->killerMoves = {};
             ctx->history.Clear();
             ctx->conthist.Clear();
+            ctx->capthist.Clear();
             ctx->positionHistory = {};
             ctx->ss = {};
 
