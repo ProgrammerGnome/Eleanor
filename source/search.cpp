@@ -435,6 +435,10 @@ SearchResults PVS(Board& board, int depth, int alpha, int beta, int ply, SearchC
             continue;
         }
 
+        // History pruning
+        if (currMove.IsQuiet() && historyScore < depth * -2000 - 1000)
+            continue;
+
         Board copy = board;
         bool isLegal = copy.MakeMove(currMove);
 
