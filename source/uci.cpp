@@ -136,13 +136,14 @@ void UCILoop(Board &board) {
         // parse UCI "ucinewgame" command
         if (input.find("ucinewgame") != std::string::npos) {
             board.SetByFen(StartingFen);
-            
+
             // Clearing
             ctx->TT.Clear();
-            
+
             ctx->killerMoves = {};
             ctx->history.Clear();
             ctx->conthist.Clear();
+            ctx->corrhist.ClearPawnHist();
             ctx->positionHistory = {};
             ctx->ss = {};
 
@@ -151,7 +152,7 @@ void UCILoop(Board &board) {
 
         // parse UCI "go" command
         if (input.find("go") != std::string::npos) {
-            ParseGo(board, input, ctx.get()); 
+            ParseGo(board, input, ctx.get());
             continue;
         }
 
