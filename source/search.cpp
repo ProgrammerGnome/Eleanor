@@ -66,24 +66,24 @@ static void SortMoves(Board &board, int ply, SearchContext* ctx) {
     if (board.currentMoveIndex <= 1) {
         return;
     }
-    
+
     int scores[MAX_MOVES];
-    
+
     for (int i = 0; i < board.currentMoveIndex; i++) {
         scores[i] = ScoreMove(board, board.moveList[i], ply, ctx);
     }
-    
+
     for (int i = 1; i < board.currentMoveIndex; i++) {
         Move tempMove = board.moveList[i];
         int tempScore = scores[i];
         int j = i - 1;
-        
+
         while (j >= 0 && scores[j] < tempScore) {
             board.moveList[j + 1] = board.moveList[j];
             scores[j + 1] = scores[j];
             j--;
         }
-        
+
         board.moveList[j + 1] = tempMove;
         scores[j + 1] = tempScore;
     }
@@ -117,7 +117,7 @@ static bool IsFifty(Board &board) {
 }
 
 static bool IsInsuffMat(Board &board) {
-    return (board.occupied.PopCount() <= 3 
+    return (board.occupied.PopCount() <= 3
         && !(board.pieces[Pawn] | board.pieces[Queen] | board.pieces[Rook]));
 }
 
@@ -128,7 +128,7 @@ bool IsDraw(Board &board, SearchContext* ctx) {
 template <bool isPV>
 static int GetReductions(Board &board, Move &move, int depth, int moveSeen, int ply, bool cutnode, SearchContext* ctx) {
     int reduction = 0;
-    
+
     // Late Move Reduction
     if (depth >= 3 && moveSeen >= 2 + (2 * isPV) && !move.IsCapture()) {
         reduction = lmrTable[depth][moveSeen];
@@ -177,7 +177,7 @@ bool SEE(Board& board, Move& move, int threshold) {
 
     if (flags == epCapture)
         occupied.SetBit(board.enPassantTarget);
-    
+
     Bitboard attackers = board.AttacksTo(to, occupied) & occupied;
 
     bool color = !board.sideToMove;
@@ -200,7 +200,7 @@ bool SEE(Board& board, Move& move, int threshold) {
             attackers |= MOVEGEN::getRookAttack(to, occupied) & rooks;
 
         attackers &= occupied;
-        
+
         color = !color;
 
         balance = -balance - 1 - SEEPieceValues[nextVictim];
@@ -241,10 +241,10 @@ static SearchResults Quiescence(Board& board, int alpha, int beta, int ply, Sear
 
     if (ply > ctx->seldepth)
         ctx->seldepth = ply;
-    
+
     int bestScore = NNUE::net.Evaluate(board);
     ctx->ss[ply].eval = bestScore;
-    
+
     if (!ctx->excluded) {
         TTEntry *entry = ctx->TT.GetRawEntry(board.hashKey);
         if (entry->hashKey == board.hashKey) {
@@ -381,9 +381,9 @@ SearchResults PVS(Board& board, int depth, int alpha, int beta, int ply, SearchC
                     ctx->doingNullMove = true;
                     int score = -PVS<false, mode>(copy, depth - reduction, -beta, -beta + 1, ply + 1, ctx, !cutnode).score;
                     ctx->doingNullMove = false;
-    
+
                     if (ctx->searchStopped) return 0;
-                    if (score >= beta) return score; 
+                    if (score >= beta) return score;
                 }
             }
         }
@@ -436,7 +436,7 @@ SearchResults PVS(Board& board, int depth, int alpha, int beta, int ply, SearchC
         }
 
         // History pruning
-        if (currMove.IsQuiet() && historyScore < depth * -2000 - 1000)
+        if (currMove.IsQuiet() && historyScore < depth * -2000 + 600)
             continue;
 
         Board copy = board;
@@ -544,7 +544,7 @@ SearchResults PVS(Board& board, int depth, int alpha, int beta, int ply, SearchC
                         ctx->conthist.Update(board.sideToMove, prevType, prevTo, pieceType, to, -bonus);
                     }
                 }
-                
+
 
                 // Malus
                 for (int moveIndex = 0; moveIndex < seenQuietsCount - 1; moveIndex++) {
